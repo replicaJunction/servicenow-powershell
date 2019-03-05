@@ -40,7 +40,11 @@ function New-ServiceNowQuery {
 
         # Hashtable containing machine field names and values returned rows must contain (will be combined with AND)
         [parameter(mandatory=$false)]
-        [hashtable]$MatchContains
+        [hashtable]$MatchContains,
+
+        # Hashtable containing advanced matching syntax
+        [parameter(mandatory=$false)]
+        [hashtable]$Match
     )
 
     Try {
@@ -71,6 +75,13 @@ function New-ServiceNowQuery {
                 $ContainsString = "^{0}LIKE{1}" -f $Field.ToString().ToLower(), ($MatchContains.$Field)
                 [void]$Query.Append($ContainsString)
             }
+        }
+
+        # Add advanced matching parameters
+        If ($Match) {
+            $matchString = Get-MatchQueryParam $Match
+            [void] $Query.Append('^')
+            [void] $Query.Append($matchString)
         }
 
         # Output StringBuilder to string
